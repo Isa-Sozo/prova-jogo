@@ -1,6 +1,9 @@
 const canvas = document.getElementById('jogoCanvas');
 const ctx = canvas.getContext('2d');
+
 let jogoAtivo = true; 
+let pontuacao = 0; 
+let pontuacaoMaxima = localStorage.getItem('pontuacaoMaxima') ? parseInt(localStorage.getItem('pontuacaoMaxima')) : 0; //PONTUAÇÃO MAXIMAAA
 
 
 const teclasPressionadas = {
@@ -8,12 +11,12 @@ const teclasPressionadas = {
     KeyS: false,
     KeyD: false,
     KeyA: false,
-    Enter: false 
+    Enter: false
 };
 
 document.addEventListener('keydown', (e) => {
     if (e.code === 'Enter' && !jogoAtivo) {
-        reiniciarJogo(); 
+        reiniciarJogo();
     }
     for (let tecla in teclasPressionadas) {
         if (teclasPressionadas.hasOwnProperty(tecla)) {
@@ -40,7 +43,7 @@ class Cobra extends Entidade {
     }
     
     atualizar() {
-        if (!jogoAtivo) return; 
+        if (!jogoAtivo) return;
         if (teclasPressionadas.KeyW) {
             this.y -= 5;
         } else if (teclasPressionadas.KeyS) {
@@ -50,11 +53,14 @@ class Cobra extends Entidade {
         } else if (teclasPressionadas.KeyD) {
             this.x += 5;
         }
-
+        
         if (this.x < 0 || this.x + this.largura > canvas.width || 
             this.y < 0 || this.y + this.altura > canvas.height) {
             jogoAtivo = false; 
+            return true; 
         }
+        
+        return false; 
     }
 
     desenhar() {
@@ -76,12 +82,18 @@ class Cobra extends Entidade {
     #houveColisao(comida) {
         comida.x = Math.random() * (canvas.width - comida.largura);
         comida.y = Math.random() * (canvas.height - comida.altura);
+        pontuacao++; 
+        
+        if (pontuacao > pontuacaoMaxima) {
+            pontuacaoMaxima = pontuacao;
+            localStorage.setItem('pontuacaoMaxima', pontuacaoMaxima); 
+        }
     }
 }
 
 class Comida extends Entidade {
     constructor() {
-        super(Math.random() * canvas.width - 10, Math.random() * canvas.height - 10, 20, 20);
+        super(Math.random() * (canvas.width - 20), Math.random() * (canvas.height - 20), 20, 20);
     }
 
     desenhar() {
@@ -103,32 +115,48 @@ function exibirGameOver() {
     ctx.shadowColor = 'white';
     ctx.shadowBlur = 10;
     ctx.fillText('GAME OVER', canvas.width / 2, canvas.height / 2 - 20);
-
+    
     ctx.font = '20px Arial';
     ctx.fillStyle = 'white';
     ctx.shadowColor = 'transparent'; 
-    ctx.fillText('Pressione ENTER para reiniciar', canvas.width / 2, canvas.height / 2 + 40);
+    ctx.fillText(`Pontuação Final: ${pontuacao}`, canvas.width / 2, canvas.height / 2 + 20);
+    ctx.fillText(`Pontuação Máxima: ${pontuacaoMaxima}`, canvas.width / 2, canvas.height / 2 + 50);
+    ctx.fillText('Pressione ENTER para reiniciar', canvas.width / 2, canvas.height / 2 + 80);
 }
 
 function reiniciarJogo() {
-    jogoAtivo = true; 
+    jogoAtivo = true;
+    pontuacao = 0; 
     cobra.x = 100; 
     cobra.y = 200;
     loop(); 
 }
 
+function exibirPontuacao() {
+    ctx.fillStyle = 'white'; 
+    ctx.font = '20px Arial';
+    ctx.fillText(`Pontuação: ${pontuacao}`, 40, 50); 
+    ctx.fillText(`Pontuação Máxima: ${pontuacaoMaxima}`, 40, 70); 
+}
+
 function loop() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-    if (jogoAtivo) {
-        cobra.desenhar();
-        cobra.atualizar();
-        comida.desenhar();
-        cobra.verificarColisao(comida);
-        requestAnimationFrame(loop);
-    } else {
+    if (!jogoAtivo) {
         exibirGameOver();
+        return; 
     }
+
+    cobra.desenhar();
+    if (cobra.atualizar()) { 
+        jogoAtivo = false; 
+    }
+    
+    comida.desenhar();
+    cobra.verificarColisao(comida);
+    exibirPontuacao();
+
+    requestAnimationFrame(loop);
 }
 
 loop();
