@@ -1,23 +1,16 @@
 const canvas = document.getElementById('jogoCanvas');
 const ctx = canvas.getContext('2d');
-
-let jogoAtivo = true; 
-let pontuacao = 0; 
-let pontuacaoMaxima = localStorage.getItem('pontuacaoMaxima') ? parseInt(localStorage.getItem('pontuacaoMaxima')) : 0; //PONTUAÇÃO MAXIMAAA
-
-
+let pontuacao = 0;
+let pontuacaoMaxima = localStorage.getItem('pontuacaoMaxima') ? parseInt(localStorage.getItem('pontuacaoMaxima')) : 0; // Carrega a pontuação máxima do localStorage
+let gameOver = false;
 const teclasPressionadas = {
     KeyW: false,
     KeyS: false,
     KeyD: false,
-    KeyA: false,
-    Enter: false
+    KeyA: false
 };
 
 document.addEventListener('keydown', (e) => {
-    if (e.code === 'Enter' && !jogoAtivo) {
-        reiniciarJogo();
-    }
     for (let tecla in teclasPressionadas) {
         if (teclasPressionadas.hasOwnProperty(tecla)) {
             teclasPressionadas[tecla] = false;
@@ -35,6 +28,7 @@ class Entidade {
         this.largura = largura;
         this.altura = altura;
     }
+
 }
 
 class Cobra extends Entidade {
@@ -43,7 +37,6 @@ class Cobra extends Entidade {
     }
     
     atualizar() {
-        if (!jogoAtivo) return;
         if (teclasPressionadas.KeyW) {
             this.y -= 5;
         } else if (teclasPressionadas.KeyS) {
@@ -53,21 +46,19 @@ class Cobra extends Entidade {
         } else if (teclasPressionadas.KeyD) {
             this.x += 5;
         }
-        
-        if (this.x < 0 || this.x + this.largura > canvas.width || 
-            this.y < 0 || this.y + this.altura > canvas.height) {
-            jogoAtivo = false; 
+
+        if (this.x < 0 || this.x + this.largura > canvas.width || this.y < 0 || this.y + this.altura > canvas.height) {
             return true; 
         }
-        
+
         return false; 
     }
-
+    
     desenhar() {
-        ctx.fillStyle = 'purple'; 
+        ctx.fillStyle = 'purple';
         ctx.fillRect(this.x, this.y, this.largura, this.altura);
     }
-
+    
     verificarColisao(comida) {
         if (
             this.x < comida.x + comida.largura &&
@@ -78,12 +69,11 @@ class Cobra extends Entidade {
             this.#houveColisao(comida);
         }
     }
-
+    
     #houveColisao(comida) {
         comida.x = Math.random() * (canvas.width - comida.largura);
         comida.y = Math.random() * (canvas.height - comida.altura);
         pontuacao++; 
-        
         if (pontuacao > pontuacaoMaxima) {
             pontuacaoMaxima = pontuacao;
             localStorage.setItem('pontuacaoMaxima', pontuacaoMaxima); 
@@ -95,15 +85,14 @@ class Comida extends Entidade {
     constructor() {
         super(Math.random() * (canvas.width - 20), Math.random() * (canvas.height - 20), 20, 20);
     }
-
+    
     desenhar() {
         ctx.fillStyle = 'red';
         ctx.fillRect(this.x, this.y, this.largura, this.altura);
     }
 }
 
-const cobra = new Cobra(100, 200, 20, 20);
-const comida = new Comida();
+
 
 function exibirGameOver() {
     ctx.fillStyle = 'hsla(342, 96.90%, 62.50%, 0.70)';
@@ -121,35 +110,29 @@ function exibirGameOver() {
     ctx.shadowColor = 'transparent'; 
     ctx.fillText(`Pontuação Final: ${pontuacao}`, canvas.width / 2, canvas.height / 2 + 20);
     ctx.fillText(`Pontuação Máxima: ${pontuacaoMaxima}`, canvas.width / 2, canvas.height / 2 + 50);
-    ctx.fillText('Pressione ENTER para reiniciar', canvas.width / 2, canvas.height / 2 + 80);
-}
-
-function reiniciarJogo() {
-    jogoAtivo = true;
-    pontuacao = 0; 
-    cobra.x = 100; 
-    cobra.y = 200;
-    loop(); 
 }
 
 function exibirPontuacao() {
-    ctx.fillStyle = 'white'; 
+    ctx.fillStyle = 'white';
     ctx.font = '20px Arial';
-    ctx.fillText(`Pontuação: ${pontuacao}`, 40, 50); 
-    ctx.fillText(`Pontuação Máxima: ${pontuacaoMaxima}`, 40, 70); 
+    ctx.fillText(`Pontuação: ${pontuacao}`, 20, 30);
+    ctx.fillText(`Pontuação Máxima: ${pontuacaoMaxima}`, 20, 60);
 }
+
+const cobra = new Cobra(100, 200, 20, 20);
+const comida = new Comida();
 
 function loop() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-    if (!jogoAtivo) {
+    if (gameOver) {
         exibirGameOver();
         return; 
     }
 
     cobra.desenhar();
     if (cobra.atualizar()) { 
-        jogoAtivo = false; 
+        gameOver = true; 
     }
     
     comida.desenhar();
