@@ -55,8 +55,8 @@ class Cobra extends Entidade {
     }
     
     desenhar() {
-        ctx.fillStyle = 'purple';
-        ctx.fillRect(this.x, this.y, this.largura, this.altura);
+        ctx.font = '50px, Arial';
+        ctx.fillText("🐍",this.x, this.y + this.altura);
     }
     
     verificarColisao(comida) {
@@ -84,12 +84,11 @@ class Cobra extends Entidade {
 class Comida extends Entidade {
     constructor() {
         super(Math.random() * (canvas.width - 20), Math.random() * (canvas.height - 20), 20, 20);
-        this.imagem = new Image();
-        this.imagem.src = 'maça.webp';
     }
     
     desenhar() {
-        ctx.drawImage(this.imagem, this.x, this.y, this.largura, this.altura);
+        ctx.font = '30px, Arial';
+        ctx.fillText("🍎",this.x, this.y + this.altura);
     }
 }
 
