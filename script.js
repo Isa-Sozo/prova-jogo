@@ -83,7 +83,7 @@ class Cobra extends Entidade {
 
 class Comida extends Entidade {
     constructor() {
-        super(Math.random() * (canvas.width - 20), Math.random() * (canvas.height - 20), 20, 20);
+        super(Math.random() * canvas.width - 40, Math.random() * canvas.height - 40, 40, 40);
     }
     
     desenhar() {
