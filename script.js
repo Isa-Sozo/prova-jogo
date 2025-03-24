@@ -84,11 +84,12 @@ class Cobra extends Entidade {
 class Comida extends Entidade {
     constructor() {
         super(Math.random() * (canvas.width - 20), Math.random() * (canvas.height - 20), 20, 20);
+        this.imagem = new Image();
+        this.imagem.src = 'maça.webp';
     }
     
     desenhar() {
-        ctx.fillStyle = 'red';
-        ctx.fillRect(this.x, this.y, this.largura, this.altura);
+        ctx.drawImage(this.imagem, this.x, this.y, this.largura, this.altura);
     }
 }
 
